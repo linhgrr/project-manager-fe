@@ -6,7 +6,7 @@
   >
 <!--    Danh dau-->
     <div class="project-image">
-      <img src="https://picsum.photos/200" alt="Project Image" />
+      <img :src="picture" alt="Project Image" />
     </div>
     <div class="project-info">
       <h3>{{ title }}</h3>
@@ -41,7 +41,7 @@ export default {
   display: flex;
   align-items: center;
   background-color: white;
-  border-radius: 20px;
+  border-radius: 28px;
   padding: 6px;
   width: 100%;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -52,13 +52,17 @@ export default {
 .project-card.active {
   background-color: #ffe6f2; /* Màu nền khi được chọn */
 }
-
+.project-image {
+  display: flex;
+  align-items: center;
+}
 .project-image img {
-  width: 50px;
-  height: 50px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
   margin-right: 20px;
+  margin-left: 10px;
 }
 
 .project-info {
@@ -66,13 +70,13 @@ export default {
 }
 
 .project-info h3 {
-  font-size: 18px;
+  font-size: 16px;
   margin: 0;
   color: #333;
 }
 
 .project-info p {
-  font-size: 14px;
+  font-size: 12px;
   color: #888;
   margin: 5px 0 0;
 }

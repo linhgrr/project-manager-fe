@@ -6,12 +6,10 @@
         <TaskCard
             v-for="task in column.tasks"
             :key="task.id"
-            :tags="task.tags"
             :title="task.title"
             :description="task.description"
             :image="task.image"
             :comments="task.comments"
-            :attachments="task.attachments"
             :assignees="task.assignees"
         />
       </div>
@@ -33,22 +31,36 @@ export default {
           tasks: [
             {
               id: 1,
-              tags: ["UX Design", "UX Research"],
               title: "Overall UX Process of full product for first version",
               description: "Gather requirements and initial design ideas.",
-              image: "https://via.placeholder.com/150",
               comments: 12,
-              attachments: 4,
-              assignees: ["https://via.placeholder.com/24", "https://via.placeholder.com/24"]
+              assignees: [
+                {
+                  id: 1,
+                  full_name: "Linh",
+                },
+                {
+                  id: 2,
+                  full_name: "Linh",
+                },
+              ],
+              managers: [
+                {
+                  id: 1,
+                  full_name: "Linh",
+                },
+                {
+                  id: 2,
+                  full_name: "Linh",
+                },
+              ]
             },
             {
               id: 2,
-              tags: ["Wireframing"],
               title: "Do wireframe of same product",
               description: "Create a low-fidelity wireframe.",
               image: "https://via.placeholder.com/150",
               comments: 8,
-              attachments: 2,
               assignees: ["https://via.placeholder.com/24"]
             }
           ]
@@ -58,22 +70,18 @@ export default {
           tasks: [
             {
               id: 3,
-              tags: ["Requirement Gathering"],
               title: "Collect all details from client",
               description: "Gather detailed requirements from client.",
               image: "https://via.placeholder.com/150",
               comments: 5,
-              attachments: 3,
               assignees: ["https://via.placeholder.com/24", "https://via.placeholder.com/24"]
             },
             {
               id: 4,
-              tags: ["Business Insights"],
               title: "Gather business insights",
               description: "Analyze client’s business objectives.",
               image: "https://via.placeholder.com/150",
               comments: 3,
-              attachments: 1,
               assignees: ["https://via.placeholder.com/24"]
             }
           ]
@@ -83,22 +91,18 @@ export default {
           tasks: [
             {
               id: 1,
-              tags: ["UX Design", "UX Research"],
               title: "Overall UX Process of full product for first version",
               description: "Gather requirements and initial design ideas.",
               image: "https://via.placeholder.com/150",
               comments: 12,
-              attachments: 4,
               assignees: ["https://via.placeholder.com/24", "https://via.placeholder.com/24"]
             },
             {
               id: 2,
-              tags: ["Wireframing"],
               title: "Do wireframe of same product",
               description: "Create a low-fidelity wireframe.",
               image: "https://via.placeholder.com/150",
               comments: 8,
-              attachments: 2,
               assignees: ["https://via.placeholder.com/24"]
             }
           ]
@@ -108,22 +112,18 @@ export default {
           tasks: [
             {
               id: 1,
-              tags: ["UX Design", "UX Research"],
               title: "Overall UX Process of full product for first version",
               description: "Gather requirements and initial design ideas.",
               image: "https://via.placeholder.com/150",
               comments: 12,
-              attachments: 4,
               assignees: ["https://via.placeholder.com/24", "https://via.placeholder.com/24"]
             },
             {
               id: 2,
-              tags: ["Wireframing"],
               title: "Do wireframe of same product",
               description: "Create a low-fidelity wireframe.",
               image: "https://via.placeholder.com/150",
               comments: 8,
-              attachments: 2,
               assignees: ["https://via.placeholder.com/24"]
             }
           ]
@@ -140,13 +140,13 @@ export default {
   display: flex;
   gap: 16px;
   padding: 16px;
-  background-color: #f9fafb;
+  background-color: #E1E2EA;
 }
 
 .task-column {
   flex: 1;
   border-radius: 8px;
-  padding: 16px;
+  padding: 4px;
 }
 
 .task-column h2 {

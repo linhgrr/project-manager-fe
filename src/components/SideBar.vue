@@ -53,7 +53,7 @@ export default {
 }
 
 .logo {
-  width: 30px;
+  width: 35%;
   height: auto;
   transition: all 0.2s ease; /* Tạo hiệu ứng chuyển đổi từ từ */
 }

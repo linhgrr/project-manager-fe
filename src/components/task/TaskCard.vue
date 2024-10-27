@@ -1,15 +1,11 @@
 <template>
   <div class="task-card">
-    <div class="tags">
-      <span v-for="tag in tags" :key="tag" class="tag">{{ tag }}</span>
-    </div>
     <h3 class="title">{{ title }}</h3>
     <p class="description">{{ description }}</p>
 <!--    Danh dau-->
     <img src="https://picsum.photos/200" alt="Task image" class="task-image"/>
     <div class="footer">
       <span class="comments">{{ comments }} 💬</span>
-      <span class="attachments">{{ attachments }} 📎</span>
       <span class="assignees">
         <img v-for="(assignee, index) in assignees" :key="index" :src="assignee" alt="Assignee" class="assignee-avatar"/>
       </span>
@@ -21,12 +17,10 @@
 export default {
   name: "TaskCard",
   props: {
-    tags: Array,
     title: String,
     description: String,
     image: String,
     comments: Number,
-    attachments: Number,
     assignees: Array
   }
 };
@@ -39,20 +33,6 @@ export default {
   padding: 16px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 16px;
-}
-
-.tags {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.tag {
-  background-color: #f3f4f6;
-  color: #4b5563;
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 4px;
 }
 
 .title {

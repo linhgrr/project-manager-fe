@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <SideBar style="width: 5%" @update-page="setPage" />
+    <SideBar style="width: 4%" @update-page="setPage" />
     <component class="component" :is="currentComponent" />
   </div>
 </template>
@@ -8,7 +8,7 @@
 <script>
 import SideBar from "@/components/SideBar.vue";
 import Dashboard from "@/components/DashboardPage.vue";
-import Project from "@/components/ProjectPage.vue";
+import Project from "@/components/project/ProjectPage.vue";
 
 export default {
   components: {SideBar, Dashboard, Project},

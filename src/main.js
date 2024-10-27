@@ -1,16 +1,14 @@
 import {createRouter, createWebHistory} from 'vue-router';
-import LoginPage from '@/components/LoginPage.vue';
+import LoginPage from '@/components/user/LoginPage.vue';
 import {createApp} from "vue";
 import App from "@/App.vue";
-import RegisterPage from "@/components/RegisterPage.vue";
-import MainPage from "@/components/MainPage.vue";
-import ProjectPage from "@/components/ProjectPage.vue";
+import RegisterPage from "@/components/user/RegisterPage.vue";
+import MainPage from "@/components/user/MainPage.vue";
 
 const routes = [
     { path: '/', component: MainPage, meta: { requiresAuth: true } },
     { path: '/login', component: LoginPage },
     { path: '/register', component: RegisterPage },
-    { path: '/prj', component: ProjectPage}
 ];
 
 const router = createRouter({

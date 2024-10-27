@@ -2,7 +2,15 @@
   <div class="project-page-container">
     <!-- Side bar -->
     <div class="side-bar">
-      <h1 class="title">All Project</h1>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <h1 class="title">All Project</h1>
+        <button class="circle-button" @click="showModal">+</button>
+      </div>
+      <ModalComponent
+          v-show="isModalVisible"
+          @close="closeModal"
+          @submit="createProject"
+      />
       <div class="search-bar">
         <svg class="search-icon feather feather-search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"></circle>
@@ -10,7 +18,7 @@
         </svg>
         <input type="text" placeholder="Search Project" />
       </div>
-      <div class="status">
+      <div class="status" style="margin-bottom: 24px;">
         <div class="status-active btn active">
           Active
         </div>
@@ -26,7 +34,7 @@
         <ProjectCard
             :title="item.title"
             :description="item.description.length > 15 ? item.description.slice(0, 15) + '...' : item.description"
-            :picture="item.picture"
+            :picture="item.pictureUrl"
             :isSelected="item.id === selectedProjectId"
             @select="selectProject(item.id)"
         />
@@ -38,35 +46,85 @@
       <ProjectDetail :projectId="selectedProjectId" />
     </div>
   </div>
+
 </template>
 
 <script>
-import ProjectCard from "@/components/ProjectCard.vue";
-import ProjectDetail from "@/components/ProjectDetail.vue";
+import ProjectCard from "@/components/project/ProjectCard.vue";
+import ProjectDetail from "@/components/project/ProjectDetail.vue";
 import axios from "axios";
+import ModalComponent from "@/components/modals/CreateProjectModal.vue";
+import Swal from "sweetalert2";
 
 export default {
   name: 'ProjectPage',
-  components: { ProjectCard, ProjectDetail },
+  components: {ModalComponent, ProjectCard, ProjectDetail },
   data() {
     return {
       projectData: [],
       selectedProjectId: null,
+      isModalVisible: false,
+
     };
   },
   methods: {
     selectProject(id) {
       this.selectedProjectId = id;
+    },
+    showModal() {
+      this.isModalVisible = true;
+    },
+    closeModal() {
+      this.isModalVisible = false;
+    },
+    async createProject(data) {
+      const token = localStorage.getItem('token');
+      try {
+        // Gọi API để tạo project
+        await axios.post('http://localhost:8080/api/projects', data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // Thực hiện khi thành công: thêm project mới vào danh sách
+        this.projectData.push(data);
+
+        // Thông báo thành công
+        Swal.fire({
+          title: 'Thành công!',
+          text: 'Project đã được tạo thành công.',
+          icon: 'success',
+        });
+      } catch (e) {
+        // Thông báo lỗi nếu yêu cầu thất bại
+        Swal.fire({
+          title: 'Lỗi!',
+          text: e.response?.data || 'Có lỗi xảy ra. Vui lòng thử lại.',
+          icon: 'error',
+        });
+      }
     }
+
   },
   async mounted() {
     const token = localStorage.getItem('token');
-    const response = await axios.get('http://localhost:8080/api/projects', {
-      headers: {
-        Authorization: `Bearer ${token}`
+    try {
+      const response = await axios.get('http://localhost:8080/api/projects', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.data && response.data.data) {
+        this.projectData = response.data.data;
+        console.log(this.projectData);
+      } else {
+        this.projectData = [];
       }
-    });
-    this.projectData = response.data.data;
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      this.projectData = []; // Đặt lại projectData trong trường hợp có lỗi
+    }
   }
 };
 </script>
@@ -86,7 +144,7 @@ export default {
 
   .side-bar{
     padding: 35px;
-    width: 15%;
+    width: 20%;
     border-right: 0.4px solid #EBECF2;
   }
 
@@ -130,6 +188,7 @@ export default {
   }
 
   .btn{
+    font-size: 16px;
     display: flex;
     height: 32px;
     padding: 6px 12px;
@@ -145,6 +204,26 @@ export default {
   }
 
   .project-list{
-    margin-top: 28px;
+    margin-top: 10px;
+  }
+  .circle-button {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: rgba(0, 123, 255, 0);
+    color: black;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, box-shadow 0.3s;
+  }
+
+  .circle-button:hover {
+    background-color: rgba(0, 86, 179, 0);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
   }
 </style>

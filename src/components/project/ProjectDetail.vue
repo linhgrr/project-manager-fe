@@ -48,7 +48,7 @@
         <TaskComponent />
       </div>
       <div v-if="selectedTab === 'discussion'">
-        <DiscussionComponent />
+        <DiscussionComponent :project-id="projectData.id"/>
       </div>
     </div>
   </div>
@@ -88,8 +88,12 @@ export default {
     await this.fetchProjectData();
   },
   watch: {
-    projectId: 'fetchProjectData'
-  },
+    projectId: {
+      immediate: true, // Gọi fetchProjectData ngay khi component được tạo
+      handler: 'fetchProjectData'
+    }
+  }
+  ,
   methods: {
     showModal() {
       this.isModalVisible = true;
@@ -240,6 +244,6 @@ export default {
 
 .tab-content {
   width: 100%;
-  height: 100%;
+  max-height: 100vh;
 }
 </style>

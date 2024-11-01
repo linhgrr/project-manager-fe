@@ -19,6 +19,14 @@
       >
         <img src="../assets/prj.svg" alt="project" class="logo"/>
       </div>
+
+      <div
+          class="project option"
+          :class="{ active: activeOption === 'User' }"
+          @click="selectOption('User')"
+      >
+        <img src="../assets/prj.svg" alt="project" class="logo"/>
+      </div>
     </div>
   </div>
 </template>

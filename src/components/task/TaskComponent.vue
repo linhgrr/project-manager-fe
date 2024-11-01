@@ -48,10 +48,12 @@ export default {
                 {
                   id: 1,
                   full_name: "Linh",
+                  pictureUrl: ""
                 },
                 {
                   id: 2,
                   full_name: "Linh",
+                  pictureUrl: ""
                 },
               ]
             },
@@ -151,7 +153,7 @@ export default {
 
 .task-column h2 {
   font-size: 18px;
-  color: #374151;
+  color: #000;
   font-weight: bold;
   margin-bottom: 16px;
 }

@@ -5,7 +5,9 @@
 <!--    Danh dau-->
     <img src="https://picsum.photos/200" alt="Task image" class="task-image"/>
     <div class="footer">
-      <span class="comments">{{ comments }} 💬</span>
+      <span class="comments">{{ comments }}
+        <img style="margin-left: 5px;" src="../../assets/cmt.svg" alt="cmt">
+      </span>
       <span class="assignees">
         <img v-for="(assignee, index) in assignees" :key="index" :src="assignee" alt="Assignee" class="assignee-avatar"/>
       </span>
@@ -32,7 +34,7 @@ export default {
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .title {
@@ -60,7 +62,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
-  color: #9ca3af;
+  color: #000;
 }
 
 .comments, .attachments {

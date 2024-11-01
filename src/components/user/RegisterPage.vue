@@ -66,7 +66,8 @@ export default {
           password: this.password,
           picture_url: "https://i.ibb.co/BZ79FpY/default-avt.jpg"
         });
-        localStorage.setItem('token', response.data);
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('userId', response.data.userId);
         this.$router.push('/login');
       } catch (error) {
         this.errorMessage = error;

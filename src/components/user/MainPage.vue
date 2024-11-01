@@ -9,9 +9,10 @@
 import SideBar from "@/components/SideBar.vue";
 import Dashboard from "@/components/DashboardPage.vue";
 import Project from "@/components/project/ProjectPage.vue";
+import UserPage from "@/components/user/UserPage.vue";
 
 export default {
-  components: {SideBar, Dashboard, Project},
+  components: {SideBar, Dashboard, Project, UserPage},
   data() {
     return {
       currentComponent: 'Project' // Component hiện tại
@@ -23,6 +24,8 @@ export default {
         this.currentComponent = 'Dashboard';
       } else if (page === 'Project') {
         this.currentComponent = 'Project';
+      } else if (page === 'User') {
+        this.currentComponent = 'UserPage';
       }
     }
   }

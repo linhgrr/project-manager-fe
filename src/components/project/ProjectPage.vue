@@ -7,7 +7,7 @@
         <button class="circle-button" @click="showModal">+</button>
       </div>
       <ModalComponent
-          v-show="isModalVisible"
+          v-if="isModalVisible"
           @close="closeModal"
           @submit="createProject"
       />
@@ -19,21 +19,21 @@
         <input type="text" placeholder="Search Project" />
       </div>
       <div class="status" style="margin-bottom: 24px;">
-        <div class="status-active btn active">
-          Active
-        </div>
-        <div class="status-onhold btn">
-          On Hold
-        </div>
-        <div class="status-closed btn">
-          Closed
-        </div>
+        <div class="status-active btn active">Active</div>
+        <div class="status-onhold btn">On Hold</div>
+        <div class="status-closed btn">Closed</div>
       </div>
-      <!-- Project list -->
-      <div class="project-list" v-for="(item, index) in projectData" :key="index">
+      <!-- Project list with loading skeleton -->
+      <div v-if="loading" class="project-list-skeleton">
+        <div class="skeleton-card" v-for="n in 5" :key="n"></div>
+      </div>
+      <div v-else class="project-list">
         <ProjectCard
+            v-for="(item, index) in projectData"
+            style="margin-bottom: 10px"
+            :key="index"
             :title="item.title"
-            :description="item.description.length > 15 ? item.description.slice(0, 15) + '...' : item.description"
+            :description="item.description?.length > 15 ? item.description.slice(0, 15) + '...' : item.description"
             :picture="item.pictureUrl"
             :isSelected="item.id === selectedProjectId"
             @select="selectProject(item.id)"
@@ -41,12 +41,11 @@
       </div>
     </div>
 
-    <!-- Project Detail -->
-    <div v-if="selectedProjectId" class="project-detail" style="flex: 1">
+    <!-- Project Detail with loading skeleton -->
+    <div v-if="selectedProjectId" class="project-detail" style="flex: 1; max-height: 100vh">
       <ProjectDetail :projectId="selectedProjectId" />
     </div>
   </div>
-
 </template>
 
 <script>
@@ -58,13 +57,13 @@ import Swal from "sweetalert2";
 
 export default {
   name: 'ProjectPage',
-  components: {ModalComponent, ProjectCard, ProjectDetail },
+  components: { ModalComponent, ProjectCard, ProjectDetail },
   data() {
     return {
       projectData: [],
       selectedProjectId: null,
       isModalVisible: false,
-
+      loading: true, // New loading state
     };
   },
   methods: {
@@ -80,24 +79,20 @@ export default {
     async createProject(data) {
       const token = localStorage.getItem('token');
       try {
-        // Gọi API để tạo project
         await axios.post('http://localhost:8080/api/projects', data, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        // Thực hiện khi thành công: thêm project mới vào danh sách
         this.projectData.push(data);
 
-        // Thông báo thành công
         Swal.fire({
           title: 'Thành công!',
           text: 'Project đã được tạo thành công.',
           icon: 'success',
         });
       } catch (e) {
-        // Thông báo lỗi nếu yêu cầu thất bại
         Swal.fire({
           title: 'Lỗi!',
           text: e.response?.data || 'Có lỗi xảy ra. Vui lòng thử lại.',
@@ -105,7 +100,6 @@ export default {
         });
       }
     }
-
   },
   async mounted() {
     const token = localStorage.getItem('token');
@@ -115,115 +109,134 @@ export default {
           Authorization: `Bearer ${token}`
         }
       });
-      if (response.data && response.data.data) {
-        this.projectData = response.data.data;
-        console.log(this.projectData);
-      } else {
-        this.projectData = [];
-      }
+      this.projectData = response.data?.data || [];
     } catch (error) {
       console.error("Error fetching projects:", error);
-      this.projectData = []; // Đặt lại projectData trong trường hợp có lỗi
+    } finally {
+      this.loading = false; // Set loading to false once data is fetched
     }
   }
 };
 </script>
 
 <style scoped>
-  .project-page-container{
-    font-family: "Space Grotesk",serif;
-    display: flex;
-  }
+.project-page-container {
+  font-family: "Space Grotesk", serif;
+  display: flex;
+}
 
-  .side-bar .title{
-    font-size: 28px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
-  }
+.side-bar .title {
+  font-size: 28px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
 
-  .side-bar{
-    padding: 35px;
-    width: 20%;
-    border-right: 0.4px solid #EBECF2;
-  }
+.side-bar {
+  padding: 35px;
+  width: 20%;
+  border-right: 0.4px solid #EBECF2;
+  max-height: 100vh;
+}
 
-  .search-bar {
-    display: flex;
-    align-items: center;
-    background-color: #f5f6fb;
-    border-radius: 30px;
-    padding: 10px;
-    width: 100%;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-  }
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: #f5f6fb;
+  border-radius: 30px;
+  padding: 10px;
+  width: 100%;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-  .search-icon {
-    width: 20px;
-    height: 20px;
-    color: #4A4A4A;
-    margin-right: 10px;
-  }
+.search-icon {
+  width: 20px;
+  height: 20px;
+  color: #4A4A4A;
+  margin-right: 10px;
+}
 
-  input {
-    border: none;
-    outline: none;
-    background-color: transparent;
-    color: #4A4A4A;
-    font-size: 16px;
-  }
+input {
+  border: none;
+  outline: none;
+  background-color: transparent;
+  color: #4A4A4A;
+  font-size: 16px;
+}
 
-  input::placeholder {
-    color: #9B9B9B;
-  }
+input::placeholder {
+  color: #9B9B9B;
+}
 
-  input:focus {
-    outline: none;
-  }
+input:focus {
+  outline: none;
+}
 
-  .side-bar .status{
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
+.status {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
 
-  .btn{
-    font-size: 16px;
-    display: flex;
-    height: 32px;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 6px;
-    justify-content: space-between;
-  }
+.btn {
+  font-size: 16px;
+  display: flex;
+  height: 32px;
+  padding: 6px 12px;
+  align-items: center;
+  justify-content: center;
+}
 
-  .status .active{
-    color: #FFF;
-    background: #000;
-    border-radius: 43px;
-  }
+.status .active {
+  color: #FFF;
+  background: #000;
+  border-radius: 43px;
+}
 
-  .project-list{
-    margin-top: 10px;
-  }
-  .circle-button {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background-color: rgba(0, 123, 255, 0);
-    color: black;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, box-shadow 0.3s;
-  }
+.project-list {
+  margin-top: 10px;
+}
 
-  .circle-button:hover {
-    background-color: rgba(0, 86, 179, 0);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+.circle-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: rgba(0, 123, 255, 0);
+  color: black;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.circle-button:hover {
+  background-color: rgba(0, 86, 179, 0);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Loading Skeleton */
+.project-list-skeleton {
+  display: grid;
+  gap: 10px;
+}
+
+.skeleton-card {
+  background-color: #e0e0e0;
+  height: 60px;
+  border-radius: 8px;
+  animation: shimmer 1.2s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
   }
+  100% {
+    background-position: 200px 0;
+  }
+}
 </style>

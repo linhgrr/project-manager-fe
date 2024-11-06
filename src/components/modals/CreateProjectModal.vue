@@ -3,7 +3,7 @@
     <div class="modal-backdrop">
       <div class="modal">
         <header class="modal-header">
-          <h2>Tạo Project Mới</h2>
+          <h2>Create new project</h2>
           <button type="button" class="btn-close" @click="close">x</button>
         </header>
 
@@ -35,7 +35,17 @@
             </div>
             <div class="form-group">
               <label for="projectImage">Project Image</label>
-              <input type="file" id="projectImage" @change="onFileChange" />
+              <div
+                  class="image-upload-box"
+                  @dragover.prevent="onDragOver"
+                  @dragleave.prevent="onDragLeave"
+                  @drop.prevent="onDrop"
+                  @click="onClickUpload"
+              >
+                <img v-if="imagePreviewUrl" :src="imagePreviewUrl" alt="Image Preview" />
+                <p v-else>Drag and drop an image here, or click to select</p>
+                <input type="file" ref="fileInput" style="display: none;" @change="onFileChange" />
+              </div>
             </div>
           </form>
         </section>
@@ -62,12 +72,40 @@ export default {
       startDate: '',
       endDate: '',
       status: 'Active',
-      selectedFile: null, // Thêm biến để lưu ảnh đã chọn
+      selectedFile: null,
+      imagePreviewUrl: null, // Thêm biến để lưu URL xem trước ảnh
     };
   },
   methods: {
+    onDragOver(event) {
+      event.currentTarget.classList.add('drag-over');
+    },
+    onDragLeave(event) {
+      event.currentTarget.classList.remove('drag-over');
+    },
+    onDrop(event) {
+      event.currentTarget.classList.remove('drag-over');
+      const files = event.dataTransfer.files;
+      if (files && files[0]) {
+        this.handleFile(files[0]);
+      }
+    },
+    onClickUpload() {
+      this.$refs.fileInput.click();
+    },
     onFileChange(event) {
-      this.selectedFile = event.target.files[0];
+      const file = event.target.files[0];
+      if (file) {
+        this.handleFile(file);
+      }
+    },
+    handleFile(file) {
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreviewUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
     },
     close() {
       this.$emit('close');
@@ -76,23 +114,20 @@ export default {
       try {
         let pictureUrl = 'https://i.ibb.co/Hg6cNNz/prj-default.jpg';
 
-        // Nếu người dùng đã chọn ảnh, tải ảnh lên và lấy URL
         if (this.selectedFile) {
           const response = await uploadImageService.uploadImage(this.selectedFile, "project_image");
           pictureUrl = response.data.url;
         }
 
-        // Tạo đối tượng projectData với URL ảnh
         const projectData = {
           title: this.title,
           description: this.description,
           startDate: this.startDate,
           endDate: this.endDate,
           status: this.status,
-          pictureUrl: pictureUrl, // Thêm URL ảnh vào dữ liệu project
+          pictureUrl: pictureUrl,
         };
 
-        // Hiển thị xác nhận tạo project
         Swal.fire({
           title: 'Xác nhận tạo Project?',
           text: 'Bạn có chắc chắn muốn tạo project mới không?',
@@ -103,7 +138,7 @@ export default {
           confirmButtonText: 'Yes, create it!',
         }).then((result) => {
           if (result.isConfirmed) {
-            this.$emit('submit', projectData); // Truyền projectData khi submit
+            this.$emit('submit', projectData);
             this.close();
           }
         });
@@ -121,7 +156,32 @@ export default {
 </script>
 
 
+
+
 <style>
+.image-upload-box {
+  border: 2px dashed #ccc;
+  border-radius: 5px;
+  width: 200px;
+  height: 200px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-upload-box img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.image-upload-box.drag-over {
+  border-color: #000;
+  background-color: #f0f0f0;
+}
+
 .modal-fade-enter,
 .modal-fade-leave-to {
   opacity: 0;

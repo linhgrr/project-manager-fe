@@ -12,16 +12,40 @@
           @submit="createProject"
       />
       <div class="search-bar">
-        <svg class="search-icon feather feather-search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        <svg class="search-icon feather feather-search">
+          <svg class="search-icon feather feather-search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
         </svg>
-        <input type="text" placeholder="Search Project" />
+        <input
+            type="text"
+            placeholder="Search Project"
+            v-model="searchQuery"
+        />
       </div>
       <div class="status" style="margin-bottom: 24px;">
-        <div class="status-active btn active">Active</div>
-        <div class="status-onhold btn">On Hold</div>
-        <div class="status-closed btn">Closed</div>
+        <div
+            class="status-active btn"
+            :class="{ active: selectedStatus === 'Active' }"
+            @click="setStatusFilter('Active')"
+        >
+          Active
+        </div>
+        <div
+            class="status-onhold btn"
+            :class="{ active: selectedStatus === 'On Hold' }"
+            @click="setStatusFilter('On Hold')"
+        >
+          On Hold
+        </div>
+        <div
+            class="status-closed btn"
+            :class="{ active: selectedStatus === 'Closed' }"
+            @click="setStatusFilter('Closed')"
+        >
+          Closed
+        </div>
       </div>
       <!-- Project list with loading skeleton -->
       <div v-if="loading" class="project-list-skeleton">
@@ -29,7 +53,7 @@
       </div>
       <div v-else class="project-list">
         <ProjectCard
-            v-for="(item, index) in projectData"
+            v-for="(item, index) in filteredProjects"
             style="margin-bottom: 10px"
             :key="index"
             :title="item.title"
@@ -63,8 +87,21 @@ export default {
       projectData: [],
       selectedProjectId: null,
       isModalVisible: false,
-      loading: true, // New loading state
+      loading: true,
+      selectedStatus: 'Active', // Trạng thái mặc định
+      searchQuery: '', // Thuộc tính cho tìm kiếm
     };
+  },
+  computed: {
+    filteredProjects() {
+      return this.projectData.filter(item => {
+        const matchesStatus = this.selectedStatus ? item.status === this.selectedStatus : true;
+        const matchesSearch = this.searchQuery
+            ? item.title.toLowerCase().includes(this.searchQuery.toLowerCase())
+            : true;
+        return matchesStatus && matchesSearch;
+      });
+    },
   },
   methods: {
     selectProject(id) {
@@ -79,13 +116,13 @@ export default {
     async createProject(data) {
       const token = localStorage.getItem('token');
       try {
-        await axios.post('http://localhost:8080/api/projects', data, {
+        const response = await axios.post('http://localhost:8080/api/projects', data, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        this.projectData.push(data);
+        this.projectData.push(response.data);
 
         Swal.fire({
           title: 'Thành công!',
@@ -99,7 +136,10 @@ export default {
           icon: 'error',
         });
       }
-    }
+    },
+    setStatusFilter(status) {
+      this.selectedStatus = status;
+    },
   },
   async mounted() {
     const token = localStorage.getItem('token');
@@ -113,7 +153,7 @@ export default {
     } catch (error) {
       console.error("Error fetching projects:", error);
     } finally {
-      this.loading = false; // Set loading to false once data is fetched
+      this.loading = false;
     }
   }
 };
@@ -185,9 +225,11 @@ input:focus {
   padding: 6px 12px;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s; /* Thêm chuyển đổi mượt mà */
 }
 
-.status .active {
+.status .btn.active {
   color: #FFF;
   background: #000;
   border-radius: 43px;

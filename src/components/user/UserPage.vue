@@ -22,7 +22,12 @@
         <button class="edit-button" @click="updateUser(profile)">Edit</button>
       </div>
 
-      <div class="form-section" v-if="!loading">
+      <div v-if="loading">
+        <!-- Display a loading indicator -->
+        <p>Loading...</p>
+      </div>
+
+      <div class="form-section" v-else>
         <!-- Full Name -->
         <div class="form-group">
           <label>Full Name</label>
@@ -48,7 +53,6 @@
 <script>
 import axios from "axios";
 import Swal from "sweetalert2";
-import uploadImageService from "@/service/UploadImageService"; "../../service/UploadImageService";
 
 const token = localStorage.getItem("token");
 
@@ -85,6 +89,7 @@ export default {
         this.profile = data;
       } catch (error) {
         console.error("Error fetching profile data:", error);
+        // Handle error state
       } finally {
         this.loading = false;
       }
@@ -97,15 +102,21 @@ export default {
       if (!file) return;
 
       try {
+        // Lazy-load the uploadImageService
+        const { default: uploadImageService } = await import("@/service/UploadImageService");
         const response = await uploadImageService.uploadImage(file);
         const avatarUrl = response.data.url;
         this.profile.pictureUrl = avatarUrl;
         // Update the user's profile with the new avatar URL
         await this.updateUser(this.profile);
-        this.profile.pictureUrl = avatarUrl;
 
         // Show success notification
-
+        Swal.fire({
+          title: "Success!",
+          text: "Avatar updated successfully.",
+          icon: "success",
+          confirmButtonText: "OK"
+        });
       } catch (error) {
         console.error("Error uploading avatar:", error);
       }
@@ -124,12 +135,9 @@ export default {
           confirmButtonText: "OK"
         });
       } catch (error) {
-        console.error("Error updating avatar URL on backend:", error);
+        console.error("Error updating user data:", error);
       }
     },
-    $loadUploadImageService() {
-      return import("../../service/UploadImageService");
-    }
   }
 };
 </script>

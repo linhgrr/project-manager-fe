@@ -25,7 +25,7 @@
           :class="{ active: activeOption === 'User' }"
           @click="selectOption('User')"
       >
-        <img src="../assets/prj.svg" alt="project" class="logo"/>
+        <img src="../assets/user.svg" alt="project" class="logo"/>
       </div>
     </div>
   </div>

@@ -10,7 +10,7 @@
       </h3>
     </div>
 
-    <div style="display: flex; justify-content: space-between">
+    <div style="display: flex; justify-content: space-between" class="bar">
       <!-- Tab selector -->
       <div class="tab-selector" style="width: 30%">
         <button
@@ -41,13 +41,15 @@
     >
     </AssignStaffModal>
 
-
     <!-- Tab content -->
     <div class="tab-content">
-      <div v-if="selectedTab === 'tasks'">
-        <TaskComponent />
+      <div v-if="selectedTab === 'tasks'" class="tasks-tab">
+        <TaskComponent
+            :staff-list="projectData.staffs"
+            :project-id="projectData.id"
+        />
       </div>
-      <div v-if="selectedTab === 'discussion'">
+      <div v-if="selectedTab === 'discussion'" class="discussion-tab">
         <DiscussionComponent :project-id="projectData.id"/>
       </div>
     </div>
@@ -61,11 +63,11 @@ import DiscussionComponent from "@/components/DiscussionComponent.vue";
 import AssignStaffModal from "@/components/modals/AssignStaffModal.vue";
 
 export default {
-  components: {AssignStaffModal, DiscussionComponent, TaskComponent},
+  components: { AssignStaffModal, DiscussionComponent, TaskComponent },
   data() {
     return {
       projectData: {},
-      selectedTab: 'tasks', // mặc định hiển thị Tasks
+      selectedTab: 'tasks',
       defaultAvatar: 'https://i.ibb.co/BZ79FpY/default-avt.jpg',
       isModalVisible: false,
     };
@@ -86,14 +88,21 @@ export default {
   },
   async mounted() {
     await this.fetchProjectData();
+
+    // Add event listeners
+    window.addEventListener("resize", this.adjustHeight);
+    this.adjustHeight(); // Initial adjustment
+  },
+  beforeUnmount() {
+    // Remove event listeners to prevent memory leaks
+    window.removeEventListener("resize", this.adjustHeight);
   },
   watch: {
     projectId: {
-      immediate: true, // Gọi fetchProjectData ngay khi component được tạo
+      immediate: true,
       handler: 'fetchProjectData'
     }
-  }
-  ,
+  },
   methods: {
     showModal() {
       this.isModalVisible = true;
@@ -111,49 +120,95 @@ export default {
           }
         });
         this.projectData = response.data.data;
-        console.log(this.projectData.staffs);
+        // Ensure DOM is updated before adjusting height
+        this.$nextTick(() => {
+          this.adjustHeight();
+        });
       } catch (error) {
         console.error('Error fetching project data:', error);
       }
     },
+    adjustHeight() {
+      const elementAbove1 = document.querySelector(".info");
+      const elementAbove2 = document.querySelector(".bar");
+      const elementBelow = document.querySelector(".discussion-tab");
+      if (elementAbove1 && elementAbove2 && elementBelow) {
+        const heightAbove = elementAbove1.offsetHeight + elementAbove2.offsetHeight;
+        elementBelow.style.height = `calc(100vh - ${heightAbove}px)`;
+      }
+    },
     selectTab(tab) {
       this.selectedTab = tab;
+      // Adjust height when tab changes
+      this.$nextTick(() => {
+        this.adjustHeight();
+      });
     },
     assignStaff() {
-      this.showModal()
+      this.showModal();
     }
   }
 };
 </script>
 
+
 <style scoped>
 .project-detail-container {
-  font-family: "Space Grotesk", serif;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 .info {
-  padding: 35px;
+  padding: 20px;
+  flex-shrink: 0;
 }
 
-.info .title {
-  font-size: 28px;
-  font-weight: 700;
+.tab-content {
+  flex: 1;
+}
+
+.discussion-tab {
+  overflow: hidden;
+}
+.tasks-tab {
+  height: 100%;
+  overflow: visible;
+}
+
+.tab-selector {
   display: flex;
-  align-items: center;
+  position: relative;
+  margin-top: 20px;
+  border-bottom: 1px solid #ddd;
 }
 
-.icon {
-  font-size: 24px;
-  margin-left: 8px;
+.tab-selector button {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  color: #333;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
 }
 
-.description {
-  font-size: 14px;
-  font-weight: 400;
-  color: #666;
+.tab-selector button.active {
+  color: #007bff;
+  font-weight: 600;
 }
 
+.tab-underline {
+  position: absolute;
+  bottom: -1px;
+  width: 50%;
+  height: 2px;
+  background-color: #007bff;
+  transition: left 0.3s ease;
+}
+
+/* Các style khác */
 .staff-list-container {
   display: flex;
   align-items: center;
@@ -210,40 +265,21 @@ export default {
   z-index: 0;
 }
 
-.tab-selector {
+.info .title {
+  font-size: 28px;
+  font-weight: 700;
   display: flex;
-  position: relative;
-  margin-top: 20px;
-  border-bottom: 1px solid #ddd;
+  align-items: center;
 }
 
-.tab-selector button {
-  flex: 1;
-  padding: 10px;
-  font-size: 16px;
-  color: #333;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
+.icon {
+  font-size: 24px;
+  margin-left: 8px;
 }
 
-.tab-selector button.active {
-  color: #007bff;
-  font-weight: 600;
-}
-
-.tab-underline {
-  position: absolute;
-  bottom: -1px;
-  width: 50%;
-  height: 2px;
-  background-color: #007bff;
-  transition: left 0.3s ease;
-}
-
-.tab-content {
-  width: 100%;
-  max-height: 100vh;
+.description {
+  font-size: 14px;
+  font-weight: 400;
+  color: #666;
 }
 </style>

@@ -3,13 +3,14 @@
     <h3 class="title">{{ title }}</h3>
     <p class="description">{{ description }}</p>
 <!--    Danh dau-->
-    <img src="https://picsum.photos/200" alt="Task image" class="task-image"/>
+    <img v-if="image" :src="image" alt="Task image" class="task-image"/>
     <div class="footer">
-      <span class="comments">{{ comments }}
+      <span class="comments">{{ comments.length }}
         <img style="margin-left: 5px;" src="../../assets/cmt.svg" alt="cmt">
       </span>
       <span class="assignees">
-        <img v-for="(assignee, index) in assignees" :key="index" :src="assignee" alt="Assignee" class="assignee-avatar"/>
+        Assignee
+        <img :src="assignee.pictureUrl" alt="Assignee" class="assignee-avatar"/>
       </span>
     </div>
   </div>
@@ -22,8 +23,8 @@ export default {
     title: String,
     description: String,
     image: String,
-    comments: Number,
-    assignees: Array
+    comments: Array,
+    assignee: Object
   }
 };
 </script>
@@ -73,6 +74,7 @@ export default {
 .assignees {
   display: flex;
   gap: 4px;
+  align-items: center;
 }
 
 .assignee-avatar {

@@ -6,14 +6,14 @@
           :key="message.id"
           :class="{ 'my-message': message.owner, 'other-message': !message.owner }"
       >
-        <strong>{{ message.owner ? "You" : `${message.fullName}` }}</strong>
+        <strong>{{ message.owner ? "Bạn" : `${message.fullName}` }}</strong>
         <p class="message-content">{{ message.content }}</p>
       </div>
     </div>
     <input
         v-model="message"
         @keyup.enter="sendMessage"
-        placeholder="Type a message..."
+        placeholder="Nhập tin nhắn..."
         class="input-box"
     />
   </div>
@@ -53,7 +53,6 @@ export default {
       await this.fetchPreviousMessages();
       this.scrollToBottom();
 
-      // Kiểm tra stompClient trước khi kết nối để tránh kết nối nhiều lần
       if (!this.stompClient || !this.stompClient.connected) {
         this.connect();
       }
@@ -78,21 +77,17 @@ export default {
       this.stompClient = Stomp.over(socket);
 
       this.stompClient.onConnect = () => {
-        console.log("Connected to WebSocket");
-
         this.stompClient.subscribe(
             `/topic/project/${this.projectId}`,
             tick => {
               const message = JSON.parse(tick.body);
               message.owner = message.senderId.toString() === userId.toString();
 
-              // Kiểm tra nếu message chưa tồn tại trước khi thêm vào để tránh lặp
               const messageExists = this.messages.some(
                   (msg) => msg.id === message.id
               );
 
               if (!messageExists) {
-                console.log("Push ne");
                 this.messages.push(message);
                 this.$nextTick(() => this.scrollToBottom());
               }
@@ -125,7 +120,7 @@ export default {
           content: this.message,
           projectId: this.projectId,
           token: token,
-          senderId: userId // Thêm senderId để xác định người gửi
+          senderId: userId
         };
         this.stompClient.send(`/app/project/${this.projectId}/chat`, {}, JSON.stringify(chatMessage));
         this.message = "";
@@ -147,42 +142,38 @@ export default {
 .chat-container {
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 280px);
-  min-height: calc(100vh - 280px);
   height: 100%;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  border: 1px solid #e0e0e0;
-  overflow: hidden;
+  background-color: #f0f2f5;
 }
 
 .chat-box {
   flex: 1;
-  padding: 10px;
+  padding: 15px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
 
-
 .my-message {
   align-self: flex-end;
-  background-color: #000000;
+  background-color: #0084ff;
   color: #ffffff;
-  border-radius: 8px;
-  padding: 8px;
+  border-radius: 18px 18px 0 18px;
+  padding: 10px 15px;
   margin: 5px 0;
   max-width: 70%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .other-message {
   align-self: flex-start;
-  background-color: #e0e0e0;
-  color: #000000;
-  border-radius: 8px;
-  padding: 8px;
+  background-color: #e4e6eb;
+  color: #050505;
+  border-radius: 18px 18px 18px 0;
+  padding: 10px 15px;
   margin: 5px 0;
   max-width: 70%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .message-content {
@@ -190,9 +181,15 @@ export default {
 }
 
 .input-box {
-  padding: 8px;
-  border: 1px solid #e0e0e0;
-  border-radius: 5px;
+  padding: 15px;
+  border: none;
+  border-top: 1px solid #ddd;
   outline: none;
+  font-size: 16px;
+  width: 100%;
+}
+
+.input-box::placeholder {
+  color: #888;
 }
 </style>

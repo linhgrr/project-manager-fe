@@ -108,6 +108,15 @@ export default {
       this.selectedProjectId = id;
     },
     showModal() {
+      const isSubscribed = localStorage.getItem('subscribed');
+      if (isSubscribed === 'false' && this.projectData.length >= 2) {
+        Swal.fire({
+          title: 'Lỗi!',
+          text: 'Vui lòng nạp vip để được tạo thêm project',
+          icon: 'error',
+        });
+        return;
+      }
       this.isModalVisible = true;
     },
     closeModal() {
@@ -115,6 +124,7 @@ export default {
     },
     async createProject(data) {
       const token = localStorage.getItem('token');
+
       try {
         const response = await axios.post('http://localhost:8080/api/projects', data, {
           headers: {
@@ -237,6 +247,7 @@ input:focus {
 
 .project-list {
   margin-top: 10px;
+  max-height: 100vh;
 }
 
 .circle-button {

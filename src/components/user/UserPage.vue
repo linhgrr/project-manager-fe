@@ -12,21 +12,30 @@
           <input type="file" @change="handleAvatarUpload" style="display: none" ref="fileInput" />
           <button @click="triggerFileInput" class="avatar-upload-button">+</button>
         </div>
+
         <!-- User Information -->
         <div class="user-info">
           <div v-if="loading" class="skeleton-loader user-name-loader"></div>
-          <h2 v-else class="user-name">{{ profile.username }}</h2>
+          <h2 v-else class="user-name" :class="{ 'rainbow-text': profile.subscribed }">
+            {{ profile.username }}
+            <span v-if="profile.subscribed" class="vip-tag">VIP</span>
+          </h2>
           <p class="user-email">{{ profile.email }}</p>
         </div>
+
         <!-- Edit Button -->
         <button class="edit-button" @click="updateUser(profile)">Edit</button>
+
+        <!-- Upgrade to VIP Button -->
+        <button v-if="!profile.subscribed" class="upgrade-button" @click="navigateToPayment">Nâng cấp VIP</button>
       </div>
 
+      <!-- Loading Indicator -->
       <div v-if="loading">
-        <!-- Display a loading indicator -->
         <p>Loading...</p>
       </div>
 
+      <!-- Form Section -->
       <div class="form-section" v-else>
         <!-- Full Name -->
         <div class="form-group">
@@ -50,6 +59,9 @@
   </div>
 </template>
 
+
+
+
 <script>
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -65,7 +77,8 @@ export default {
         fullName: "",
         address: "",
         dateOfBirth: "",
-        pictureUrl: ""
+        pictureUrl: "",
+        subscribed: false  // Cờ kiểm tra nếu người dùng đã đăng ký
       },
       loading: true,
     };
@@ -89,7 +102,6 @@ export default {
         this.profile = data;
       } catch (error) {
         console.error("Error fetching profile data:", error);
-        // Handle error state
       } finally {
         this.loading = false;
       }
@@ -102,15 +114,12 @@ export default {
       if (!file) return;
 
       try {
-        // Lazy-load the uploadImageService
         const { default: uploadImageService } = await import("@/service/UploadImageService");
         const response = await uploadImageService.uploadImage(file);
         const avatarUrl = response.data.url;
         this.profile.pictureUrl = avatarUrl;
-        // Update the user's profile with the new avatar URL
         await this.updateUser(this.profile);
 
-        // Show success notification
         Swal.fire({
           title: "Success!",
           text: "Avatar updated successfully.",
@@ -138,9 +147,15 @@ export default {
         console.error("Error updating user data:", error);
       }
     },
+    navigateToPayment() {
+      // Điều hướng đến trang thanh toán
+      this.$router.push({ path: "/payment" });
+    }
   }
 };
 </script>
+
+
 
 <style scoped>
 .profile-page {
@@ -210,6 +225,31 @@ export default {
   margin: 0;
 }
 
+.rainbow-text {
+  background-image: linear-gradient(90deg, #ff7e5f, #feb47b, #ffdd67, #a1ffce, #6dd5ed, #a1c4fd);
+  background-size: 200% 100%;
+  animation: rainbow-animation 3s linear infinite;
+  -webkit-background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+
+@keyframes rainbow-animation {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+.vip-tag {
+  background-color: #f59e0b;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
 .user-email {
   font-size: 14px;
   color: #6b7280;
@@ -224,6 +264,22 @@ export default {
   border-radius: 4px;
   border: none;
   cursor: pointer;
+  margin-right: 8px;
+}
+
+.upgrade-button {
+  background-color: #f59e0b;
+  color: #ffffff;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.upgrade-button:hover {
+  background-color: #d97706;
 }
 
 .form-section {
@@ -266,3 +322,6 @@ export default {
   width: 100%;
 }
 </style>
+
+
+

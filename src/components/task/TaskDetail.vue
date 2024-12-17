@@ -1,7 +1,7 @@
 <template>
   <div v-if="task">
     <div class="backdrop" @click="$emit('close')"></div>
-    <div class="task-detail-sidebar">
+    <div class="task-detail-sidebar slide-in">
       <header class="sidebar-header">
         <h2>{{ task.title }}</h2>
         <button type="button" class="btn-close" @click="$emit('close')">✖</button>
@@ -10,7 +10,6 @@
         <p>{{ task.description }}</p>
         <div class="task-meta">
           <div class="task-info">
-            <!-- Created by -->
             <div class="task-detail-row">
               <p class="meta-label"><strong>Created by</strong></p>
               <div class="task-users">
@@ -20,8 +19,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Assigned to -->
             <div class="task-detail-row">
               <p class="meta-label"><strong>Assigned to</strong></p>
               <div class="task-users">
@@ -31,14 +28,10 @@
                 </div>
               </div>
             </div>
-
-            <!-- Timeline -->
             <div class="task-detail-row">
               <p class="meta-label"><strong>Timeline</strong></p>
               <p>{{ formatDate(task.startDate) }} to {{ formatDate(task.dueDate) }}</p>
             </div>
-
-            <!-- Status -->
             <div class="task-detail-row">
               <p class="meta-label"><strong>Status</strong></p>
               <div class="status-info">
@@ -50,32 +43,123 @@
         </div>
 
         <img v-if="task.taskImageUrl" :src="task.taskImageUrl" alt="Task Image" class="task-image" />
+
+        <!-- Sub Task Section -->
+        <SubTaskList
+            :subTasks="task.subTasks"
+            :task-id="task.id"
+        />
+
+        <!-- Comments Section -->
+        <div class="comments-section">
+          <h3>Comments</h3>
+          <div v-if="comments.length">
+            <div v-for="comment in comments" :key="comment.id" class="comment">
+              <p>
+                <strong :class="{ 'user-name': true, 'vip': comment.author.subscribed }">
+                  {{ comment.author.fullName }}
+                </strong>
+                : {{ comment.content }}
+              </p>
+              <small>{{ formatDate(comment.createdDate) }}</small>
+            </div>
+
+          </div>
+          <div v-else>
+            <p>No comments yet.</p>
+          </div>
+
+          <div class="add-comment">
+            <textarea v-model="newComment" placeholder="Write a comment..." rows="3"></textarea>
+            <button @click="submitComment" :disabled="!newComment">Add Comment</button>
+          </div>
+        </div>
       </section>
-      <footer class="sidebar-footer">
-      </footer>
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios';
+import SubTaskList from "@/components/task/SubTaskList.vue";
+const token = localStorage.getItem("token");
+
 export default {
   name: "TaskDetail",
+  components: {SubTaskList},
   props: {
     task: {
       type: Object,
       required: true
     }
   },
+  data() {
+    return {
+      comments: [],
+      newComment: ""
+    };
+  },
   methods: {
     formatDate(dateStr) {
-      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      const options = {year: 'numeric', month: 'short', day: 'numeric'};
       return new Date(dateStr).toLocaleDateString('en-US', options);
+    },
+    fetchComments() {
+      axios
+          .get(`http://localhost:8080/api/tasks/${this.task.id}/comments`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          })
+          .then(response => {
+            this.comments = response.data;
+          })
+          .catch(error => {
+            console.error("Error fetching comments:", error);
+          });
+    },
+    submitComment() {
+      const commentData = {
+        taskId: this.task.id,
+        content: this.newComment
+      };
+      axios
+          .post(`http://localhost:8080/api/tasks/${this.task.id}/comments`, commentData, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          })
+          .then(response => {
+            this.comments.push(response.data);
+            this.newComment = "";
+          })
+          .catch(error => {
+            console.error("Error adding comment:", error);
+          });
     }
+  },
+  mounted() {
+    this.fetchComments();
   }
 };
 </script>
 
 <style scoped>
+@keyframes rainbowText {
+  0% { color: red; }
+  16.66% { color: orange; }
+  33.33% { color: yellow; }
+  50% { color: green; }
+  66.66% { color: blue; }
+  83.33% { color: indigo; }
+  100% { color: violet; }
+}
+
+.vip {
+  animation: rainbowText 3s linear infinite;
+  font-weight: bold;
+}
+
 .backdrop {
   position: fixed;
   top: 0;
@@ -98,6 +182,12 @@ export default {
   z-index: 20;
   display: flex;
   flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.slide-in {
+  transform: translateX(0);
 }
 
 .sidebar-header {
@@ -113,14 +203,8 @@ export default {
 .sidebar-body {
   flex: 1;
   padding: 20px 0;
-  overflow-y: auto; /* Giữ chức năng cuộn */
-
-  /* Ẩn thanh cuộn trên các trình duyệt Webkit (Chrome, Safari) */
-  scrollbar-width: none; /* Ẩn thanh cuộn trên Firefox */
-}
-
-.sidebar-body::-webkit-scrollbar {
-  width: 0; /* Ẩn thanh cuộn trên Chrome, Safari */
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 
 .task-meta {
@@ -183,6 +267,7 @@ export default {
   height: auto;
   border-radius: 10px;
   margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .btn-close {
@@ -196,6 +281,83 @@ export default {
 
 .btn-close:hover {
   color: #333;
+}
+
+.comments-section {
+  margin-top: 20px;
+  color: #333; /* Dark text for better contrast */
+}
+
+.comments-section h3 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #E0E0E0;
+  padding-bottom: 5px;
+}
+
+.comment {
+  background: #fff; /* White background for comment box */
+  border: 1px solid #E0E0E0;
+  padding: 15px;
+  border-radius: 10px; /* Rounded corners for modern look */
+  margin-bottom: 15px;
+  transition: box-shadow 0.3s ease;
+}
+
+
+.comment p {
+  font-size: 14px;
+  color: #333;
+  margin: 0;
+}
+
+.comment small {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #777;
+}
+
+.add-comment {
+  margin-top: 20px;
+}
+
+.add-comment textarea {
+  width: 93%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  color: #333;
+  background-color: #f5f5f5; /* Light background for input area */
+  resize: none;
+  transition: border-color 0.3s ease;
+}
+
+.add-comment textarea:focus {
+  border-color: #333;
+}
+
+.add-comment button {
+  margin-top: 10px;
+  padding: 10px 16px;
+  border: none;
+  background-color: #333; /* Dark button for contrast */
+  color: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.add-comment button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.add-comment button:hover:not(:disabled) {
+  background-color: #555;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 </style>

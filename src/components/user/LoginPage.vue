@@ -51,9 +51,12 @@ export default {
         }
         );
 
+        console.log(response.data);
         // Lưu JWT vào localStorage
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('userId', response.data.userId);
+        localStorage.setItem('fullName', response.data.fullName);
+        localStorage.setItem('subscribed', response.data.subscribed);
         // Điều hướng đến trang chủ
         this.$router.push('/');
       } catch (error) {

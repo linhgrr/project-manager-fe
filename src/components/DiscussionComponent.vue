@@ -6,8 +6,15 @@
           :key="message.id"
           :class="{ 'my-message': message.owner, 'other-message': !message.owner }"
       >
-        <strong>{{ message.owner ? "Bạn" : `${message.fullName}` }}</strong>
-        <p class="message-content">{{ message.content }}</p>
+        <!-- Nếu là tin nhắn của đối phương, hiển thị avatar và tên ở trên -->
+        <div v-if="!message.owner" class="message-header">
+          <span :class="{ 'rainbow-text': message.subscribed }">{{ message.fullName }}</span>
+        </div>
+        <!-- Nội dung tin nhắn -->
+        <div style="display: flex; align-items: center">
+          <img v-if="message.pictureUrl && !message.owner" :src="message.pictureUrl" alt="Avatar" class="avatar" />
+          <p class="message-content">{{ message.content }}</p>
+        </div>
       </div>
     </div>
     <input
@@ -18,6 +25,8 @@
     />
   </div>
 </template>
+
+
 
 <script>
 import SockJS from 'sockjs-client';
@@ -159,25 +168,58 @@ export default {
   background-color: #0084ff;
   color: #ffffff;
   border-radius: 18px 18px 0 18px;
-  padding: 10px 15px;
   margin: 5px 0;
+  font-size: 15px;
   max-width: 70%;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .other-message {
-  align-self: flex-start;
+  max-width: 70%;
+  margin: 10px 0;
+}
+
+.message-header {
+  flex-direction: column;
+  margin-left: 55px;
+  margin-bottom: 5px;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.other-message .message-content {
   background-color: #e4e6eb;
   color: #050505;
-  border-radius: 18px 18px 18px 0;
-  padding: 10px 15px;
-  margin: 5px 0;
-  max-width: 70%;
+  border-radius: 18px;
+
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .message-content {
+  padding: 10px 15px;
   margin: 0;
+  font-size: 15px;
+}
+
+.rainbow-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  background-image: linear-gradient(90deg, #ff7e5f, #feb47b, #ffdd67, #a1ffce, #6dd5ed, #a1c4fd);
+  background-size: 200% 100%;
+  animation: rainbow-animation 3s linear infinite;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@keyframes rainbow-animation {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
 }
 
 .input-box {
@@ -193,3 +235,6 @@ export default {
   color: #888;
 }
 </style>
+
+
+

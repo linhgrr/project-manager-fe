@@ -91,7 +91,6 @@ export default {
     showTaskDetails(task) {
       this.selectedTask = task; // Đặt task được chọn để hiển thị chi tiết
       this.isModalVisible = true;
-      console.log(task);
     },
     closeModal() {
       this.isModalVisible = false;
@@ -143,6 +142,8 @@ export default {
         });
 
         const tasks = response.data.data;
+        console.log('allll');
+        console.log(tasks);
         this.columns.forEach(column => column.tasks = []); // Xóa các task cũ
         tasks.forEach(task => {
           const column = this.columns.find(c => c.name === task.status);

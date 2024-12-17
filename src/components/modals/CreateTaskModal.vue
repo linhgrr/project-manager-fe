@@ -8,8 +8,16 @@
         </header>
 
         <section class="modal-body">
-          <div class="scrollable-content">
+          <!-- Loading spinner overlay -->
+          <div v-if="isUploading" class="loading-overlay">
+            <div class="spinner"></div>
+            <p>Creating task...</p>
+          </div>
+
+          <div v-else class="scrollable-content">
             <form @submit.prevent="submitForm">
+              <!-- Form fields here -->
+              <!-- ... -->
               <div class="form-group">
                 <label for="title">Title</label>
                 <input type="text" id="title" v-model="title" required />
@@ -60,8 +68,8 @@
         </section>
 
         <footer class="modal-footer">
-          <button type="button" class="btn-submit" @click="submitForm">Submit</button>
-          <button type="button" class="btn-cancel" @click="close">Cancel</button>
+          <button type="button" class="btn-submit" @click="submitForm" :disabled="isUploading">Submit</button>
+          <button type="button" class="btn-cancel" @click="close" :disabled="isUploading">Cancel</button>
         </footer>
       </div>
     </div>
@@ -95,6 +103,7 @@ export default {
       assigneeId: null,
       selectedFile: null,
       imagePreviewUrl: null,
+      isUploading: false, // New loading state
     };
   },
   methods: {
@@ -132,58 +141,18 @@ export default {
       this.$emit('close');
     },
     async submitForm() {
-      // Kiểm tra xem tất cả các trường có được điền đầy đủ hay không
-      if (!this.title) {
+      // Validate form fields
+      if (!this.title || !this.description || !this.startDate || !this.dueDate || !this.priority || !this.assigneeId) {
         Swal.fire({
           title: 'Error',
-          text: 'Please fill in the title.',
-          icon: 'warning',
-        });
-        return;
-      }
-      if (!this.description) {
-        Swal.fire({
-          title: 'Error',
-          text: 'Please fill in the description.',
-          icon: 'warning',
-        });
-        return;
-      }
-      if (!this.startDate) {
-        Swal.fire({
-          title: 'Error',
-          text: 'Please select a start date.',
-          icon: 'warning',
-        });
-        return;
-      }
-      if (!this.dueDate) {
-        Swal.fire({
-          title: 'Error',
-          text: 'Please select a due date.',
-          icon: 'warning',
-        });
-        return;
-      }
-      if (!this.priority) {
-        Swal.fire({
-          title: 'Error',
-          text: 'Please select a priority level.',
-          icon: 'warning',
-        });
-        return;
-      }
-      if (!this.assigneeId) {
-        Swal.fire({
-          title: 'Error',
-          text: 'Please select an assignee.',
+          text: 'Please fill in all required fields.',
           icon: 'warning',
         });
         return;
       }
 
       try {
-        // Nếu tất cả các trường đều hợp lệ, thực hiện tiếp tục quá trình submit
+        this.isUploading = true; // Start loading state
         let pictureUrl = 'https://i.ibb.co/Hg6cNNz/prj-default.jpg';
 
         if (this.selectedFile) {
@@ -224,6 +193,8 @@ export default {
           text: 'Failed to upload image or submit task.',
           icon: 'error',
         });
+      } finally {
+        this.isUploading = false; // End loading state
       }
     }
   },

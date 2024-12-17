@@ -4,11 +4,15 @@ import {createApp} from "vue";
 import App from "@/App.vue";
 import RegisterPage from "@/components/user/RegisterPage.vue";
 import MainPage from "@/components/user/MainPage.vue";
+import PaymentResult from "@/components/subscription/PaymentResult.vue";
+import PaymentComponent from "@/components/subscription/PaymentComponent.vue";
 
 const routes = [
     { path: '/', component: MainPage, meta: { requiresAuth: true } },
     { path: '/login', component: LoginPage },
     { path: '/register', component: RegisterPage },
+    { path: '/payment-result', component: PaymentResult},
+    { path: '/payment', component: PaymentComponent}
 ];
 
 const router = createRouter({

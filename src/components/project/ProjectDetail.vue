@@ -3,7 +3,6 @@
     <div class="info">
       <h1 class="title">
         {{ projectData.title }}
-        <span class="icon">⚡</span>
       </h1>
       <h3 class="description">
         {{ projectData.description }}
